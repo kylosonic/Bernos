@@ -1,33 +1,27 @@
-<?php
-  $receiving_email_address = 'nahomg761@gmail.com';
+// Validate input
+if(empty($_POST['name']) || empty($_POST['email']) || empty($_POST['message'])) {
+  echo "Please fill in all fields";
+  exit;
+}
 
-  if (file_exists($php_email_form = '../assets/vendor/php-email-form/php-email-form.php')) {
-    include($php_email_form);
-  } else {
-    die('Unable to load the "PHP Email Form" Library!');
-  }
+// Sanitize input
+$name = filter_var($_POST['name'], FILTER_SANITIZE_STRING);
+$email = filter_var($_POST['email'], FILTER_SANITIZE_EMAIL);
+$message = filter_var($_POST['message'], FILTER_SANITIZE_STRING);
 
-  $contact = new PHP_Email_Form();
-  $contact->ajax = true;
-  
-  $contact->to = $receiving_email_address;
-  $contact->from_name = $_POST['name'];
-  $contact->from_email = $_POST['email'];
-  $contact->subject = $_POST['subject'];
+// Create mailer and set data
+require 'PHPMailer.php';
+$mail = new PHPMailer();
 
-  // Uncomment below code if you want to use SMTP to send emails. You need to enter your correct SMTP credentials
-  /*
-  $contact->smtp = array(
-    'host' => 'example.com',
-    'username' => 'example',
-    'password' => 'pass',
-    'port' => '587'
-  );
-  */
+$mail->setFrom($email, $name);
+$mail->addAddress('nahomg761@gmail.com'); 
 
-  $contact->add_message($_POST['name'], 'From');
-  $contact->add_message($_POST['email'], 'Email');
-  $contact->add_message($_POST['message'], 'Message', 10);
+$mail->Subject = 'New contact form submission';
+$mail->Body = $message;
 
-  echo $contact->send();
-?>
+// Send email
+if($mail->send()) {
+  echo "Thank you for contacting us!"; 
+} else {
+  echo "Oops, error sending message.";
+}
